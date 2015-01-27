@@ -3,6 +3,11 @@ juice_soap_client
 
 Soap client for easy integration with soap services. Exposed as Juice module though you can directly instantiate SOAPClient
 
+
+<code>soapClient.setPackageScan("com.bluehermit.apps.example.soap.shopping").target("http://localhost:8080/WS/ShoppingCartService").request(request).send().getEntity();</code>
+
+
+
 TODO
 --------------
 - Add soap signing support
