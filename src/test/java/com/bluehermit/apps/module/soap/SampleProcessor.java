@@ -21,7 +21,11 @@ import javax.xml.bind.JAXBElement;
 
 import com.bluehermit.apps.module.soap.client.SOAPClient;
 import com.google.inject.Inject;
-import com.bluehermit.apps.example.soap.shopping.*;
+
+import com.bluehermit.apps.example.soap.shopping.Buy;
+import com.bluehermit.apps.example.soap.shopping.BuyResponse;
+import com.bluehermit.apps.example.soap.shopping.Cart;
+import com.bluehermit.apps.example.soap.shopping.ObjectFactory;
 
 public class SampleProcessor {
 	
@@ -39,10 +43,10 @@ public class SampleProcessor {
 		
 		JAXBElement<Buy> request=factory.createBuy(buy);
 
-		JAXBElement<BuyResponse> response= (JAXBElement<BuyResponse>) soapClient.setPackageScan("com.bluehermit.apps.example.soap.shopping").target("http://localhost:8080/WS/ShoppingCartService")
+		BuyResponse response= (BuyResponse) soapClient.setPackageScan("com.bluehermit.apps.example.soap.shopping").target("http://localhost:8080/WS/ShoppingCartService")
 				.request(request).send().getEntity();
 		
-		return ((BuyResponse)response.getValue()).getReturn().getPrintItems();
+		return response.getReturn().getPrintItems();
 	}
 
 }

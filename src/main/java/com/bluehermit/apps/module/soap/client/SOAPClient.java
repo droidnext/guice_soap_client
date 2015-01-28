@@ -16,23 +16,30 @@
 package com.bluehermit.apps.module.soap.client;
 
 import java.io.StringReader;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
+import com.google.inject.Inject;
+
 public class SOAPClient<T> {
+	
+	private static final Logger log = LoggerFactory.getLogger(SOAPClient.class);
 	
 	private String soapXmlRequest=null;
 	private String soapXmlResponse=null;
@@ -43,6 +50,10 @@ public class SOAPClient<T> {
 	private Class<T> soapResponseType;
 	private Fault fault;
 	private String packageScan;
+	private static ConcurrentHashMap<String, JAXBContext> jaxbContextCache = new ConcurrentHashMap<String, JAXBContext>();
+	private Object soapRequestObject;
+	@Inject
+	private HttpClient httpClient;
 	
 	public SOAPClient target(String endPoint)
 	{
@@ -52,13 +63,14 @@ public class SOAPClient<T> {
 	
 	public SOAPClient request(Object request) throws Exception
 	{
+		this.soapRequestObject = request;
 		this.soapXmlRequest=SoapXmlGeneratorUtil.generateSoapXmlRequest(request);
 		return this;
 	}
 	
 	public SOAPClient send() throws Exception
 	{
-		this.soapXmlResponse=HttpClient.post(this.endPoint, this.soapXmlRequest);
+		this.soapXmlResponse=httpClient.post(this.endPoint, this.soapXmlRequest);
 		this.marshall();
 		return this;
 	}
@@ -76,7 +88,8 @@ public class SOAPClient<T> {
 	
 	private void marshall() throws Exception
 	{
-		JAXBContext ctx = JAXBContext.newInstance(getPackageScan());
+		String packageScan = getPackageScan();
+		JAXBContext ctx = getContext(packageScan);
 		
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		documentBuilderFactory.setNamespaceAware(true);
@@ -89,15 +102,16 @@ public class SOAPClient<T> {
 			responseNode = (Node) xpath.evaluate(SOAP_BODY_XPATH, document,XPathConstants.NODE);
 			if(responseNode.getNodeName().toLowerCase().contains("fault"))
 			{
-				fault = new Fault();
-				String faultCode = XPathFactoryImpl.newInstance().newXPath().evaluate(SOAP_FAULT_CODE_XPATH, responseNode);
-				fault.setFaultcode(faultCode);
-				this.fault=fault;
+				this.fault=buildFault();
 			}
 			else
 			{
 				Unmarshaller unmarshaller =  ctx.createUnmarshaller();
 				this.soapResponseObject = (T)unmarshaller.unmarshal(responseNode);
+				if(isJAXBElement(this.soapResponseObject))
+				{
+					this.soapResponseObject=(T)((JAXBElement)this.soapResponseObject).getValue();
+				}
 			}
 		}catch(Exception exp)
 		{
@@ -106,6 +120,23 @@ public class SOAPClient<T> {
 	}
 	
 	public String getPackageScan() {
+		if(packageScan!=null)
+		{
+			if(packageScan.contains(","))
+				packageScan.replace(",", ":");
+		}
+		else
+		{
+			if(isJAXBElement(this.soapRequestObject))
+			{
+				packageScan = ((JAXBElement)soapRequestObject).getValue().getClass().getPackage().getName();
+			}else
+			{
+				packageScan = soapXmlRequest.getClass().getPackage().getName();
+			}
+		}
+		
+		
 		return packageScan;
 	}
 
@@ -117,6 +148,43 @@ public class SOAPClient<T> {
 	public String getXmlResponse()
 	{
 		return this.soapXmlResponse;
+	}
+	
+	private Fault buildFault()
+	{
+		Fault fault = new Fault();
+		fault.setFaultcode(getTagValue("faultcode"));
+		fault.setFaultstring("faultstring");
+		fault.setDetail(getTagValue("detail"));
+		return fault;
+	}
+	
+	private String getTagValue(String tagName)
+	{
+		String START_TAG="<"+tagName+">";
+		String END_TAG="</"+tagName+">";
+		return soapXmlResponse.substring(soapXmlResponse.indexOf(START_TAG)+START_TAG.length(), soapXmlResponse.indexOf(END_TAG));
+	}
+	
+	private boolean isJAXBElement(Object object)
+	{
+		if(object.getClass().getName().equals(JAXBElement.class.getName()))
+			return true;
+		else
+			return false;
+	}
+	
+	private JAXBContext getContext(String packageScan) throws Exception
+	{
+		if(jaxbContextCache.get(packageScan)==null)
+		{
+			JAXBContext ctx = JAXBContext.newInstance(packageScan);
+			jaxbContextCache.put(packageScan, ctx);
+			return ctx;
+		}else
+		{
+			return jaxbContextCache.get(packageScan);
+		}
 	}
 
 }

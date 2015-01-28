@@ -20,11 +20,9 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.bluehermit.apps.module.soap.client.SoapClientModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.bluehermit.apps.example.soap.shopping.*;
-import com.bluehermit.apps.module.soap.SampleProcessor;
-import com.bluehermit.apps.module.soap.client.SoapClientModule;
 
 public class SoapClientTest {
 

@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bluehermit.apps.module.soap.client;
+package com.bluehermit.apps.module.soap;
 
 
 import com.google.inject.AbstractModule;
+import com.bluehermit.apps.module.soap.client.HttpClient;
 import com.bluehermit.apps.module.soap.client.SOAPClient;
 
-public class SoapClientModule extends AbstractModule{
+public class SoapClientMockModule extends AbstractModule{
 
 	@Override
 	protected void configure() {
 		bind(SOAPClient.class);
-		bind(HttpClient.class).to(HttpClientHelperImpl.class);
+		bind(HttpClient.class).to(HttpClientHelperMockImpl.class);
 	}
 
 }

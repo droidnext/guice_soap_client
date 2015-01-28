@@ -15,62 +15,9 @@
  */
 package com.bluehermit.apps.module.soap.client;
 
-import java.io.IOException;
-import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+public interface HttpClient {
 
-public class HttpClient {
-
-	public static String post(String target,String message) throws Exception
-	{
-		String responeMessage = null;
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-        try {
-        	HttpPost httppost = new HttpPost(target);
-        	httppost.setHeader("Content-Type","text/xml");
-        	httppost.setEntity(new StringEntity(message));
-
-            System.out.println("Executing request " + httppost.getRequestLine());
-            CloseableHttpResponse response = httpclient.execute(httppost);
-            try {
-                System.out.println("----------------------------------------");
-                System.out.println(response.getStatusLine());
-
-                // Get hold of the response entity
-                HttpEntity entity = response.getEntity();
-
-                // If the response does not enclose an entity, there is no need
-                // to bother about connection release
-                if (entity != null) {
-                    InputStream instream = entity.getContent();
-                    try {
-                    	responeMessage = IOUtils.toString(instream, "UTF-8");
-                        // do something useful with the response
-                    } catch (IOException ex) {
-                        // In case of an IOException the connection will be released
-                        // back to the connection manager automatically
-                        throw ex;
-                    } finally {
-                        // Closing the input stream will trigger connection release
-                        instream.close();
-                    }
-                }
-            } finally {
-                response.close();
-            }
-        } finally {
-            httpclient.close();
-        }
-        
-		return responeMessage;
-	}
-	
+	public String post(String target,String message) throws Exception;
 	
 }

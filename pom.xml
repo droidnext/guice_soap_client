@@ -75,7 +75,7 @@
 <!-- 							<sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
  -->							<wsdlOptions>
 								<wsdlOption>
-									<wsdl>${basedir}/src/main/resources/ShoppingCartService.wsdl</wsdl>
+									<wsdl>${basedir}/src/test/resources/ShoppingCartService.wsdl</wsdl>
 									<frontEnd>jaxws21</frontEnd>
 								</wsdlOption>
 							</wsdlOptions>
