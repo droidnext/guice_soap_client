@@ -7,8 +7,11 @@ Soap client for easy integration with soap services. Exposed as Juice module (th
 private SOAPClient soapClient;
 soapClient.target("http://localhost:8080/WS/ShoppingCartService").request(request).send().getEntity();
 </code>
+
+
+For jaxb to scan additional packages  
+######
 <code>
-//For jaxb to scan additional packages 
 soapClient.setPackageScan("comma separated packages").target("http://localhost:8080/WS/ShoppingCartService").request(request).send().getEntity();
 </code>
 
