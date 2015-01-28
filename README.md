@@ -2,12 +2,14 @@ juice_soap_client
 ============================
 
 Soap client for easy integration with soap services. Exposed as Juice module (though you can directly instantiate SOAPClient)
+- 
 <code>
 @Inject
 private SOAPClient soapClient;
 soapClient.target("http://localhost:8080/WS/ShoppingCartService").request(request).send().getEntity();
 </code>
 
+-
 <code>
 //For jaxb to scan additional packages 
 soapClient.setPackageScan("comma separated packages").target("http://localhost:8080/WS/ShoppingCartService").request(request).send().getEntity();
