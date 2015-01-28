@@ -1,7 +1,7 @@
 juice_soap_client
 ============================
-
 Soap client for easy integration with soap services. Exposed as Juice module (though you can directly instantiate SOAPClient)
+
 --
 
 <code>
