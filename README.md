@@ -4,7 +4,7 @@ Soap client for easy integration with soap services. Exposed as Juice module (th
 
 <code>
 @Inject
-private SOAPClient soapClient;
+private SOAPClient<ResponseClass> soapClient;
 soapClient.target("http://localhost:8080/WS/ShoppingCartService").request(request).send().getEntity();
 </code>
 
